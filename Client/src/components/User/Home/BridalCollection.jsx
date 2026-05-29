@@ -8,7 +8,6 @@ function BridalCollection() {
   return (
     <div className="pb-20">
 
-      {/* SECTION TITLE */}
       <div className="text-center mb-12">
         <p className="uppercase tracking-[5px] text-sm text-gray-500 mb-3">
           Exclusive Collection
@@ -19,10 +18,8 @@ function BridalCollection() {
         </h2>
       </div>
 
-      {/* COLLECTION GRID */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
 
-        {/* LEFT TOP */}
         <div className="md:col-span-6 relative overflow-hidden rounded-3xl group h-[320px]">
           <img
             src={home6}
@@ -34,11 +31,9 @@ function BridalCollection() {
 
           <div className="absolute top-6 left-6">
             <h3 className="text-black text-3xl font-serif">
-              {/* Princess Lace Ball Gown */}
             </h3>
 
             <p className="text-white/80 mt-2 text-sm max-w-sm">
-              {/* Elegant handcrafted bridal collection with timeless beauty. */}
             </p>
              <button className="mt-4 bg-white text-black px-5 py-2 mt-60  rounded-full text-sm font-medium hover:bg-gray-200 transition">
               Explore
@@ -46,7 +41,6 @@ function BridalCollection() {
           </div>
         </div>
 
-        {/* RIGHT TOP */}
         <div className="md:col-span-6 relative overflow-hidden rounded-3xl group h-[320px]">
           <img
             src={home7}
@@ -58,11 +52,9 @@ function BridalCollection() {
 
           <div className="absolute top-6 left-6">
             <h3 className="text-black text-2xl font-serif max-w-md">
-              {/* Classic White Cathedral Bridal Dress */}
             </h3>
 
             <p className="text-white/80 mt-2 text-sm max-w-sm">
-              {/* Designed for graceful moments and unforgettable weddings. */}
             </p>
              <button className="mt-4 bg-white text-black px-5 py-2 mt-60  rounded-full text-sm font-medium hover:bg-gray-200 transition">
               Explore
@@ -72,7 +64,6 @@ function BridalCollection() {
           
         </div>
 
-        {/* BOTTOM LEFT */}
         <div className="md:col-span-4 relative overflow-hidden rounded-3xl group h-[500px]">
           <img
             src={home8}
@@ -93,7 +84,6 @@ function BridalCollection() {
           </div>
         </div>
 
-        {/* BOTTOM CENTER */}
         <div className="md:col-span-4 relative overflow-hidden rounded-3xl group h-[500px]">
           <img
             src={home9}
@@ -114,7 +104,6 @@ function BridalCollection() {
           </div>
         </div>
 
-        {/* BOTTOM RIGHT */}
         <div className="md:col-span-4 relative overflow-hidden rounded-3xl group h-[500px]">
           <img
             src={home10}

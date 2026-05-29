@@ -6,22 +6,18 @@ function StoreSection() {
       
       <div className="grid grid-cols-1 lg:grid-cols-2 min-h-[750px]">
 
-        {/* LEFT CONTENT */}
         <div className="flex items-center justify-center px-6 sm:px-10 md:px-16 lg:px-20 py-16 md:py-20">
           
           <div className="max-w-lg w-full">
 
-            {/* SMALL TITLE */}
             <p className="uppercase tracking-[4px] text-sm text-gray-500 mb-4">
               Visit Us
             </p>
 
-            {/* MAIN TITLE */}
             <h2 className="text-4xl md:text-5xl font-serif text-black leading-tight mb-14">
               FLAGSHIP STORES
             </h2>
 
-            {/* STORE CARD 1 */}
             <div className="border-b border-gray-300 pb-10 mb-10">
 
               <h3 className="text-3xl font-serif text-black mb-4">
@@ -43,7 +39,6 @@ function StoreSection() {
               </div>
             </div>
 
-            {/* STORE CARD 2 */}
             <div>
 
               <h3 className="text-3xl font-serif text-black mb-4">
@@ -69,7 +64,6 @@ function StoreSection() {
           </div>
         </div>
 
-        {/* RIGHT IMAGE */}
         <div className="relative h-[500px] lg:h-auto">
 
           <img
@@ -78,7 +72,6 @@ function StoreSection() {
             className="w-full h-full object-cover"
           />
 
-          {/* OVERLAY */}
           <div className="absolute inset-0 bg-black/10"></div>
 
         </div>

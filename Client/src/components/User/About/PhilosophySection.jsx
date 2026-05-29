@@ -5,7 +5,6 @@ const PhilosophySection = () => {
     <section className="py-20 md:py-28 px-6 md:px-12 bg-[#f7f3f0]">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
         
-        {/* LEFT IMAGE */}
         <div className="flex justify-center md:justify-start">
           <div className="overflow-hidden rounded-[30px] w-full max-w-[520px] h-[700px] shadow-xl">
             <img
@@ -16,7 +15,6 @@ const PhilosophySection = () => {
           </div>
         </div>
 
-        {/* RIGHT CONTENT */}
         <div className="flex flex-col justify-center">
           <p className="uppercase tracking-[5px] text-sm text-gray-500 mb-5">
             Our Philosophy

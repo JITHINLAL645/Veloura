@@ -8,17 +8,14 @@ const UniqueSection = () => {
     <section className="bg-[#f7f4f2] py-24 px-6 md:px-12">
       <div className="max-w-7xl mx-auto">
         
-        {/* HEADING */}
         <div className="text-center mb-20">
           <h2 className="font-serif text-[42px] md:text-[45px] leading-tight text-black">
             What Makes VELOURA Unique?
           </h2>
         </div>
 
-        {/* GRID */}
         <div className="grid md:grid-cols-2 gap-x-10 gap-y-20">
           
-          {/* CARD 1 */}
           <div>
             <div className="overflow-hidden shadow-sm">
               <img
@@ -39,7 +36,6 @@ const UniqueSection = () => {
             </div>
           </div>
 
-          {/* CARD 2 */}
           <div>
             <div className="overflow-hidden shadow-sm">
               <img
@@ -60,7 +56,6 @@ const UniqueSection = () => {
             </div>
           </div>
 
-          {/* CARD 3 */}
           <div>
             <div className="overflow-hidden shadow-sm">
               <img
@@ -82,7 +77,6 @@ const UniqueSection = () => {
             </div>
           </div>
 
-          {/* CARD 4 */}
           <div>
             <div className="overflow-hidden shadow-sm">
               <img

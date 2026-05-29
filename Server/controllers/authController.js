@@ -1,167 +1,153 @@
 import User from "../models/userModel.js";
-
 import bcrypt from "bcryptjs";
-
 import otpGenerator from "otp-generator";
-
 import jwt from "jsonwebtoken";
-
 import sendOtp from "../utils/sendOtp.js";
 
 
-// STORE OTP TEMPORARILY
-const otpStore = {};
-
-
-// SIGNUP
 export const signup = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    // CHECK EXISTING USER
-    const userExist = await User.findOne({ email });
-
-    if (userExist) {
+    const verifiedUser = await User.findOne({ email, isVerified: true });
+    if (verifiedUser) {
       return res.status(400).json({
+        success: false,
         message: "User already exists",
       });
     }
 
-    // GENERATE OTP
     const otp = otpGenerator.generate(6, {
       upperCaseAlphabets: false,
       lowerCaseAlphabets: false,
       specialChars: false,
     });
 
-    // STORE TEMP DATA
-    otpStore[email] = {
-      name,
-      email,
-      password,
-      otp,
-    };
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
-    // SEND OTP
+    await User.findOneAndUpdate(
+      { email, isVerified: false },
+      { name, email, password: hashedPassword, otp, otpExpiry, isVerified: false },
+      { upsert: true, returnDocument: "after" }
+    );
+
     await sendOtp(email, otp);
 
-    res.status(200).json({
-      message: "OTP Sent Successfully",
-    });
-
+    res.status(200).json({ success: true, message: "OTP Sent Successfully" });
   } catch (error) {
-    res.status(500).json({
-      message: "Server Error",
-    });
+    console.log("SIGNUP ERROR:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
   }
 };
 
 
-
-// VERIFY OTP
 export const verifyOtp = async (req, res) => {
   try {
     const { email, otp } = req.body;
 
-    // CHECK TEMP DATA
-    const pendingUser = otpStore[email];
+    const pendingUser = await User.findOne({ email, isVerified: false });
 
     if (!pendingUser) {
       return res.status(400).json({
-        message: "Signup session expired",
+        success: false,
+        message: "Signup session expired. Please sign up again.",
       });
     }
 
-    // CHECK OTP
+    if (!pendingUser.otpExpiry || new Date() > pendingUser.otpExpiry) {
+      return res.status(400).json({
+        success: false,
+        message: "OTP has expired. Please sign up again.",
+      });
+    }
+
     if (pendingUser.otp !== otp) {
       return res.status(400).json({
+        success: false,
         message: "Invalid OTP",
       });
     }
 
-    // HASH PASSWORD
-    const hashedPassword = await bcrypt.hash(
-      pendingUser.password,
-      10
+    const user = await User.findByIdAndUpdate(
+      pendingUser._id,
+      { isVerified: true, otp: "", otpExpiry: null },
+      { returnDocument: "after" }
     );
 
-    // CREATE USER AFTER OTP VERIFY
-    const user = await User.create({
-      name: pendingUser.name,
-      email: pendingUser.email,
-      password: hashedPassword,
-      isVerified: true,
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
     });
 
-    // REMOVE TEMP DATA
-    delete otpStore[email];
-
-    // TOKEN
-    const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "7d",
-      }
-    );
-
-    res.status(201).json({
-      message: "OTP Verified Successfully",
-      token,
-      user,
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
+    res.status(201).json({ success: true, message: "OTP Verified Successfully", user });
   } catch (error) {
-    res.status(500).json({
-      message: "Server Error",
-    });
+    console.log("VERIFY OTP ERROR:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
   }
 };
 
-
-
-
-// LOGIN
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
-
+    const user = await User.findOne({ email, isVerified: true });
     if (!user) {
       return res.status(404).json({
-        message: "User not found",
+        success: false,
+        message: "User not found. Please sign up first.",
       });
     }
 
-    const matchPassword = await bcrypt.compare(
-      password,
-      user.password
-    );
+    if (user.isBlock) {
+      return res.status(403).json({
+        success: false,
+        message: "Your account has been blocked. Contact support.",
+      });
+    }
 
+    const matchPassword = await bcrypt.compare(password, user.password);
     if (!matchPassword) {
       return res.status(400).json({
+        success: false,
         message: "Incorrect Password",
       });
     }
 
-    const token = jwt.sign(
-      { id: user._id },
-      process.env.JWT_SECRET,
-      {
-        expiresIn: "7d",
-      }
-    );
-
-    res.status(200).json({
-      message: "Login Success",
-      token,
-      user,
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
     });
 
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.status(200).json({ success: true, message: "Login Success", user });
   } catch (error) {
-    res.status(500).json({
-      message: "Server Error",
+    console.log("LOGIN ERROR:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+
+export const logout = async (req, res) => {
+  try {
+    res.cookie("token", "", {
+      httpOnly: true,
+      expires: new Date(0),
     });
+
+    res.status(200).json({ success: true, message: "Logout Successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Server Error" });
   }
 };

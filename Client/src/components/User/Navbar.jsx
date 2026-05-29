@@ -15,16 +15,12 @@ import ProfileDropdown from "./ProfileDropdown";
 function Navbar() {
   const navigate = useNavigate();
 
-  // LOGIN STATE
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  // DROPDOWN STATE
   const [showDropdown, setShowDropdown] = useState(false);
 
-  // REF
   const dropdownRef = useRef();
 
-  // CHECK LOGIN
   useEffect(() => {
     const user = localStorage.getItem("user");
 
@@ -35,7 +31,6 @@ function Navbar() {
     }
   }, []);
 
-  // CLOSE DROPDOWN WHEN CLICK OUTSIDE
   useEffect(() => {
     function handleClickOutside(event) {
       if (
@@ -56,7 +51,6 @@ function Navbar() {
     };
   }, []);
 
-  // LOGOUT
   const handleLogout = () => {
     localStorage.removeItem("user");
 
@@ -72,10 +66,8 @@ function Navbar() {
 
       <div className="w-full px-6 md:px-14 py-5 flex items-center justify-between">
 
-        {/* LEFT SIDE */}
         <div className="flex items-center gap-12">
 
-          {/* LOGO */}
           <Link to="/" className="flex items-center gap-3 cursor-pointer">
 
             <img
@@ -95,10 +87,8 @@ function Navbar() {
 
           </Link>
 
-          {/* NAV LINKS */}
           <ul className="hidden lg:flex items-center gap-8 text-[15px] font-medium text-gray-700">
 
-            {/* HOME */}
             <li className="relative group transition-all duration-300">
 
               <Link to="/" className="cursor-pointer">
@@ -109,7 +99,6 @@ function Navbar() {
 
             </li>
 
-            {/* SHOP */}
             <li className="relative group transition-all duration-300">
 
               <Link to="/shop" className="cursor-pointer">
@@ -120,7 +109,6 @@ function Navbar() {
 
             </li>
 
-            {/* ABOUT */}
             <li className="relative group transition-all duration-300">
 
               <Link to="/about" className="cursor-pointer">
@@ -135,27 +123,22 @@ function Navbar() {
 
         </div>
 
-        {/* RIGHT SIDE */}
         <div className="flex items-center gap-3 relative">
 
-          {/* WISHLIST */}
           <button className="hidden md:flex w-11 h-11 items-center justify-center rounded-full hover:bg-gray-100 transition">
 
             <Heart size={19} className="text-gray-700" />
 
           </button>
 
-          {/* CART */}
           <button className="hidden md:flex w-11 h-11 items-center justify-center rounded-full hover:bg-gray-100 transition relative">
 
             <ShoppingCart size={19} className="text-gray-700" />
 
           </button>
 
-          {/* IF USER NOT LOGGED IN */}
           {!isLoggedIn ? (
             <>
-              {/* SIGN IN */}
               <Link
                 to="/login"
                 className="hidden md:flex items-center justify-center px-4 py-2 rounded-full hover:bg-gray-100 text-gray-800 hover:text-black transition text-sm font-medium"
@@ -163,7 +146,6 @@ function Navbar() {
                 Sign in
               </Link>
 
-              {/* SIGN UP */}
               <Link
                 to="/signup"
                 className="bg-[#e5a93b] hover:bg-[#d89b2d] text-black px-6 py-3 rounded-full transition-all duration-300 text-sm font-medium shadow-md hover:shadow-lg"
@@ -173,7 +155,6 @@ function Navbar() {
             </>
           ) : (
             <>
-              {/* PROFILE BUTTON */}
               <div className="relative" ref={dropdownRef}>
 
                 <button
@@ -183,7 +164,6 @@ function Navbar() {
                   <User size={20} className="text-black" />
                 </button>
 
-                {/* DROPDOWN */}
                 <ProfileDropdown
                   isOpen={showDropdown}
                   onLogout={handleLogout}
@@ -193,7 +173,6 @@ function Navbar() {
             </>
           )}
 
-          {/* MOBILE MENU */}
           <button className="lg:hidden flex items-center justify-center w-11 h-11 rounded-full hover:bg-gray-100 transition">
 
             <Menu size={21} />

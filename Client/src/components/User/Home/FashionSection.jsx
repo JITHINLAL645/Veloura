@@ -7,7 +7,6 @@ function FashionSection() {
         
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-14 lg:gap-20 items-center">
 
-          {/* LEFT IMAGE */}
           <div className="flex justify-center">
             <div className="overflow-hidden rounded-[15px] w-full max-w-[560px]">
               <img
@@ -18,20 +17,16 @@ function FashionSection() {
             </div>
           </div>
 
-          {/* RIGHT CONTENT */}
           <div className="text-white">
 
-            {/* SUB TITLE */}
             <p className="uppercase tracking-[4px] text-sm text-white/50 mb-4">
               Luxury Collection
             </p>
 
-            {/* TITLE */}
             <h2 className="text-4xl md:text-6xl font-serif leading-tight mb-8">
               Dresses
             </h2>
 
-            {/* DESCRIPTION */}
             <div className="space-y-5 text-white/70 text-base md:text-lg leading-[1.9] font-light max-w-xl">
 
               <p>
@@ -56,7 +51,6 @@ function FashionSection() {
 
             </div>
 
-            {/* SMALL FEATURES */}
             <div className="grid grid-cols-2 gap-y-5 gap-x-8 mt-12">
 
               <div>
@@ -101,7 +95,6 @@ function FashionSection() {
 
             </div>
 
-            {/* BUTTON */}
             <div className="mt-14">
               <button className="bg-[#f3e9e7] text-black px-10 md:px-12 py-3.5 rounded-full text-base md:text-lg font-medium hover:bg-white transition-all duration-300">
                 Explore Collection

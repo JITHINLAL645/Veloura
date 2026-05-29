@@ -5,7 +5,6 @@ const HeritageSection = () => {
     <section className="bg-[#f7f4f2] py-24 px-6 md:px-12 overflow-hidden">
       <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-20 items-center">
         
-        {/* LEFT IMAGE */}
         <div className="flex justify-center md:justify-start">
           <div className="relative w-full max-w-[560px] h-[780px]">
             <div className="absolute inset-0 overflow-hidden shadow-xl">
@@ -18,7 +17,6 @@ const HeritageSection = () => {
           </div>
         </div>
 
-        {/* RIGHT CONTENT */}
         <div className="max-w-[600px]">
           <h2 className="font-serif text-[42px] md:text-[40px] leading-[1.08] text-black mb-10">
             Where Heritage Meets
@@ -31,10 +29,8 @@ const HeritageSection = () => {
             global bride, our couture celebrates:
           </p>
 
-          {/* FEATURES */}
           <div className="space-y-10">
             
-            {/* ITEM 1 */}
             <div className="flex items-start gap-5">
               <div className="w-2 h-2 rounded-full bg-black mt-3 shrink-0"></div>
 
@@ -44,7 +40,6 @@ const HeritageSection = () => {
               </p>
             </div>
 
-            {/* ITEM 2 */}
             <div className="flex items-start gap-5">
               <div className="w-2 h-2 rounded-full bg-black mt-3 shrink-0"></div>
 
@@ -53,7 +48,6 @@ const HeritageSection = () => {
               </p>
             </div>
 
-            {/* ITEM 3 */}
             <div className="flex items-start gap-5">
               <div className="w-2 h-2 rounded-full bg-black mt-3 shrink-0"></div>
 

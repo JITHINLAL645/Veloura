@@ -5,12 +5,15 @@ const userSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
+      trim: true,
     },
 
     email: {
       type: String,
       required: true,
       unique: true,
+      trim: true,
+      lowercase: true,
     },
 
     password: {
@@ -20,6 +23,12 @@ const userSchema = new mongoose.Schema(
 
     otp: {
       type: String,
+      default: "",
+    },
+
+    otpExpiry: {
+      type: Date,
+      default: null,
     },
 
     isVerified: {
@@ -35,6 +44,17 @@ const userSchema = new mongoose.Schema(
     isAdmin: {
       type: Boolean,
       default: false,
+    },
+
+    profileImage: {
+      type: String,
+      default: "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
+    },
+
+    about: {
+      type: String,
+      default: "",
+      maxlength: 500,
     },
   },
   {

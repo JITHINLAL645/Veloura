@@ -5,7 +5,6 @@ const StorySection = () => {
     <section className="bg-[#f7f4f2] py-20 px-6 md:px-12 overflow-hidden">
       <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-20 items-center">
         
-        {/* LEFT CONTENT */}
         <div className="max-w-[560px]">
           <h2 className="font-serif text-[42px] md:text-[56px] leading-[1.08] text-black mb-8">
             The Story Behind the
@@ -35,7 +34,6 @@ const StorySection = () => {
             </p>
           </div>
 
-          {/* BUTTON */}
           <div className="mt-12">
             <button
               onClick={() => (window.location.href = "/contact")}
@@ -58,11 +56,9 @@ const StorySection = () => {
           </div>
         </div>
 
-        {/* RIGHT IMAGE DESIGN */}
         <div className="flex justify-center md:justify-end">
           <div className="relative w-[560px] h-[760px]">
             
-            {/* GOLD BOX */}
             <div
               className="
                 absolute
@@ -77,7 +73,6 @@ const StorySection = () => {
               "
             />
 
-            {/* MAIN IMAGE */}
             <div
               className="
                 absolute
