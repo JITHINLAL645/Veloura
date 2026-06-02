@@ -10,6 +10,9 @@ import userRoutes from "./routes/User/userRoutes.js";
 import adminRoute from "./routes/adminRoute.js";
 import productRoutes from "./routes/productRoutes.js";
 import errorHandler from "./middleware/errorHandler.js";
+import cartRoutes from "./routes/cartRoutes.js";
+import wishlistRoutes from "./routes/wishlistRoutes.js";
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,6 +37,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/admin", adminRoute);
 app.use("/api/products", productRoutes);
+app.use("/api/cart", cartRoutes);
+app.use("/api/wishlist", wishlistRoutes);
 
 app.use(errorHandler);
 

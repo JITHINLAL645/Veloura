@@ -125,61 +125,57 @@ function Navbar() {
 
         <div className="flex items-center gap-3 relative">
 
-          <button className="hidden md:flex w-11 h-11 items-center justify-center rounded-full hover:bg-gray-100 transition">
+  <button className="hidden md:flex w-11 h-11 items-center justify-center rounded-full hover:bg-gray-100 transition">
+<Link to="/wishlist">
+  <Heart size={19} />
+</Link>  </button>
 
-            <Heart size={19} className="text-gray-700" />
+  <Link
+    to="/cart"
+    className="hidden md:flex w-11 h-11 items-center justify-center rounded-full hover:bg-gray-100 transition relative"
+  >
+    <ShoppingCart size={19} className="text-gray-700" />
+  </Link>
 
-          </button>
+  {!isLoggedIn ? (
+    <>
+      <Link
+        to="/login"
+        className="hidden md:flex items-center justify-center px-4 py-2 rounded-full hover:bg-gray-100 text-gray-800 hover:text-black transition text-sm font-medium"
+      >
+        Sign in
+      </Link>
 
-          <button className="hidden md:flex w-11 h-11 items-center justify-center rounded-full hover:bg-gray-100 transition relative">
+      <Link
+        to="/signup"
+        className="bg-[#e5a93b] hover:bg-[#d89b2d] text-black px-6 py-3 rounded-full transition-all duration-300 text-sm font-medium shadow-md hover:shadow-lg"
+      >
+        Sign up
+      </Link>
+    </>
+  ) : (
+    <>
+      <div className="relative" ref={dropdownRef}>
+        <button
+          onClick={() => setShowDropdown(!showDropdown)}
+          className="w-12 h-12 rounded-full bg-[#f6e3ba] hover:bg-[#eed29a] flex items-center justify-center transition-all duration-300 shadow-md"
+        >
+          <User size={20} className="text-black" />
+        </button>
 
-            <ShoppingCart size={19} className="text-gray-700" />
+        <ProfileDropdown
+          isOpen={showDropdown}
+          onLogout={handleLogout}
+        />
+      </div>
+    </>
+  )}
 
-          </button>
+  <button className="lg:hidden flex items-center justify-center w-11 h-11 rounded-full hover:bg-gray-100 transition">
+    <Menu size={21} />
+  </button>
 
-          {!isLoggedIn ? (
-            <>
-              <Link
-                to="/login"
-                className="hidden md:flex items-center justify-center px-4 py-2 rounded-full hover:bg-gray-100 text-gray-800 hover:text-black transition text-sm font-medium"
-              >
-                Sign in
-              </Link>
-
-              <Link
-                to="/signup"
-                className="bg-[#e5a93b] hover:bg-[#d89b2d] text-black px-6 py-3 rounded-full transition-all duration-300 text-sm font-medium shadow-md hover:shadow-lg"
-              >
-                Sign up
-              </Link>
-            </>
-          ) : (
-            <>
-              <div className="relative" ref={dropdownRef}>
-
-                <button
-                  onClick={() => setShowDropdown(!showDropdown)}
-                  className="w-12 h-12 rounded-full bg-[#f6e3ba] hover:bg-[#eed29a] flex items-center justify-center transition-all duration-300 shadow-md"
-                >
-                  <User size={20} className="text-black" />
-                </button>
-
-                <ProfileDropdown
-                  isOpen={showDropdown}
-                  onLogout={handleLogout}
-                />
-
-              </div>
-            </>
-          )}
-
-          <button className="lg:hidden flex items-center justify-center w-11 h-11 rounded-full hover:bg-gray-100 transition">
-
-            <Menu size={21} />
-
-          </button>
-
-        </div>
+</div>
 
       </div>
 

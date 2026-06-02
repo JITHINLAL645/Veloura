@@ -4,10 +4,14 @@ import { useParams } from "react-router-dom";
 import Navbar from "../../components/User/Navbar";
 import Footer from "../../components/User/Footer";
 
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+
 const API = "http://localhost:5000";
 
 function ProductSingle() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [product, setProduct] = useState(null);
   const [selectedImage, setSelectedImage] = useState("");
@@ -40,6 +44,41 @@ function ProductSingle() {
     const y = ((e.clientY - top) / height) * 100;
 
     setZoomPosition({ x, y });
+  };
+
+  const handleAddToCart = async () => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user"));
+
+      if (!user) {
+        toast("Please login first");
+        return;
+      }
+
+      const response = await fetch(`${API}/api/cart/add`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: user._id,
+          productId: product._id,
+          size: selectedSize,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        toast("Product Added To Cart");
+        navigate("/cart");
+      } else {
+        toast(data.message);
+      }
+    } catch (error) {
+      console.log(error);
+      toast("Something went wrong");
+    }
   };
 
   if (!product) {
@@ -94,9 +133,7 @@ function ProductSingle() {
                     key={index}
                     src={`${API}${img}`}
                     alt=""
-                    onClick={() =>
-                      setSelectedImage(`${API}${img}`)
-                    }
+                    onClick={() => setSelectedImage(`${API}${img}`)}
                     className={`cursor-pointer object-cover w-full h-[320px] border transition-all duration-300 ${
                       selectedImage === `${API}${img}`
                         ? "border-black"
@@ -115,38 +152,23 @@ function ProductSingle() {
 
               <div className="mt-6">
                 <p className="text-[36px] font-light">
-                  ₹
-                  {Number(product.price).toLocaleString(
-                    "en-IN"
-                  )}
+                  ₹{Number(product.price).toLocaleString("en-IN")}
                 </p>
 
                 <p className="text-xs text-gray-500 mt-2">
-                  Tax included. Shipping calculated at
-                  checkout.
+                  Tax included. Shipping calculated at checkout.
                 </p>
               </div>
 
               {/* SIZE */}
               <div className="mt-10">
-                <p className="uppercase text-xs tracking-[2px] mb-4">
-                  Size
-                </p>
+                <p className="uppercase text-xs tracking-[2px] mb-4">Size</p>
 
                 <div className="flex flex-wrap gap-2">
-                  {[
-                    "XS",
-                    "S",
-                    "M",
-                    "L",
-                    "XL",
-                    "XXL",
-                  ].map((size) => (
+                  {["XS", "S", "M", "L", "XL", "XXL"].map((size) => (
                     <button
                       key={size}
-                      onClick={() =>
-                        setSelectedSize(size)
-                      }
+                      onClick={() => setSelectedSize(size)}
                       className={`px-4 py-2 text-sm border transition-all duration-200 ${
                         selectedSize === size
                           ? "bg-black text-white border-black"
@@ -160,52 +182,43 @@ function ProductSingle() {
 
                 <p className="mt-3 text-sm text-gray-500">
                   Selected Size :{" "}
-                  <span className="font-medium text-black">
-                    {selectedSize}
-                  </span>
+                  <span className="font-medium text-black">{selectedSize}</span>
                 </p>
               </div>
 
               <p className="mt-6 text-sm text-gray-600">
-                Only at Veloura Designs — Perks You Won't
-                Find Anywhere Else!
+                Only at Veloura Designs — Perks You Won't Find Anywhere Else!
               </p>
 
               {/* FEATURES */}
               <div className="space-y-4 mt-8 text-sm text-gray-700">
                 <div className="flex gap-3">
                   <span>📦</span>
-                  <p>
-                    Shipped to store free of charge.
-                  </p>
+                  <p>Shipped to store free of charge.</p>
                 </div>
 
                 <div className="flex gap-3">
                   <span>🚚</span>
-                  <p>
-                    Fast and secure delivery service.
-                  </p>
+                  <p>Fast and secure delivery service.</p>
                 </div>
 
                 <div className="flex gap-3">
                   <span>🌍</span>
-                  <p>
-                    International shipping available.
-                  </p>
+                  <p>International shipping available.</p>
                 </div>
 
                 <div className="flex gap-3">
                   <span>♡</span>
-                  <p>
-                    One-time basic alterations free of
-                    charge.
-                  </p>
+                  <p>One-time basic alterations free of charge.</p>
                 </div>
               </div>
 
               {/* BUTTONS */}
               <div className="mt-8 space-y-3">
-                <button className="w-full border border-black py-3 text-sm uppercase tracking-wide hover:bg-black hover:text-white transition">
+                <button
+                  onClick={handleAddToCart}
+                  className="w-full border border-black py-3 text-sm uppercase tracking-wide hover:bg-black hover:text-white transition"
+                >
                   Add To Cart
                 </button>
 
@@ -228,20 +241,14 @@ function ProductSingle() {
 
               {/* COLOR */}
               <div className="mt-8">
-                <h3 className="font-medium">
-                  Color :
-                </h3>
+                <h3 className="font-medium">Color :</h3>
 
-                <p className="text-sm text-gray-600 mt-1">
-                  {product.color}
-                </p>
+                <p className="text-sm text-gray-600 mt-1">{product.color}</p>
               </div>
 
               {/* DELIVERY */}
               <div className="mt-8">
-                <h3 className="font-medium">
-                  Delivery Details :
-                </h3>
+                <h3 className="font-medium">Delivery Details :</h3>
 
                 <p className="text-sm text-gray-600 mt-2">
                   Delivery time 4-8 business weeks
@@ -250,34 +257,25 @@ function ProductSingle() {
 
               {/* DETAILS */}
               <div className="mt-8">
-                <h3 className="font-medium mb-3">
-                  Details :
-                </h3>
+                <h3 className="font-medium mb-3">Details :</h3>
 
                 <ul className="text-sm text-gray-600 space-y-2 list-disc pl-5">
                   <li>Premium quality fabric.</li>
                   <li>Dry clean only.</li>
                   <li>
-                    Slight variation in color is possible
-                    due to photography and screen
-                    settings.
+                    Slight variation in color is possible due to photography and
+                    screen settings.
                   </li>
                 </ul>
               </div>
 
               {/* SHARE */}
               <div className="flex gap-8 mt-10 text-sm text-gray-700">
-                <button className="hover:text-black">
-                  Share
-                </button>
+                <button className="hover:text-black">Share</button>
 
-                <button className="hover:text-black">
-                  Facebook
-                </button>
+                <button className="hover:text-black">Facebook</button>
 
-                <button className="hover:text-black">
-                  Pin it
-                </button>
+                <button className="hover:text-black">Pin it</button>
               </div>
             </div>
           </div>

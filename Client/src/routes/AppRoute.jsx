@@ -8,6 +8,8 @@ import Login from "../pages/User/Login";
 import Otp from "../pages/User/Otp";
 import Profile from "../pages/User/Profile";
 import Shop from "../pages/User/Shop";
+import Cart from "../pages/User/Cart";
+import Wishlist from "../pages/User/Wishlist";
 
 import AdminLayout from "../layout/AdminLayout";
 
@@ -33,6 +35,10 @@ function AppRoute() {
         <Route path="/profile" element={<Profile />} />
 
         <Route path="/shop" element={<Shop />} />
+
+        <Route path="/cart" element={<Cart />} />
+
+        <Route path="/wishlist" element={<Wishlist />} />
 
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />
