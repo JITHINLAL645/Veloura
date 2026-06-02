@@ -55,7 +55,7 @@ function AdminSidebar() {
           </NavLink>
 
           <NavLink
-            to="/admin/products"
+            to="/products"
             className={({ isActive }) =>
               `flex items-center gap-3 px-5 py-4 rounded-xl transition font-medium ${
                 isActive

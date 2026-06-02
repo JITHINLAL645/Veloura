@@ -3,3 +3,9 @@
 @theme {
   --color-primary: #f59e0b;
 }
+
+
+.stroke-text {
+  -webkit-text-stroke: 1px #c08b2c;
+  color: transparent;
+}
