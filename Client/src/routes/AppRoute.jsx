@@ -10,6 +10,10 @@ import Profile from "../pages/User/Profile";
 import Shop from "../pages/User/Shop";
 import Cart from "../pages/User/Cart";
 import Wishlist from "../pages/User/Wishlist";
+import Checkout from "../pages/User/Checkout";
+// import Payment from "../pages/User/Payment";
+import PaymentSuccess from "../pages/User/PaymentSuccess";
+import Orders from "../pages/User/Orders";
 
 import AdminLayout from "../layout/AdminLayout";
 
@@ -39,6 +43,12 @@ function AppRoute() {
         <Route path="/cart" element={<Cart />} />
 
         <Route path="/wishlist" element={<Wishlist />} />
+
+        <Route path="/checkout" element={<Checkout />} />
+
+        <Route path="/payment-success" element={<PaymentSuccess />} />
+
+        <Route path="/orders" element={<Orders />} />
 
         <Route path="/admin" element={<AdminLayout />}>
           <Route index element={<AdminDashboard />} />

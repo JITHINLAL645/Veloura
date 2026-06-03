@@ -12,12 +12,16 @@ import productRoutes from "./routes/productRoutes.js";
 import errorHandler from "./middleware/errorHandler.js";
 import cartRoutes from "./routes/cartRoutes.js";
 import wishlistRoutes from "./routes/wishlistRoutes.js";
+import checkoutRoutes from "./routes/Checkoutroutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
+
 
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 dotenv.config();
+// console.log(process.env.STRIPE_SECRET_KEY);
 
 connectDB();
 
@@ -39,6 +43,8 @@ app.use("/api/admin", adminRoute);
 app.use("/api/products", productRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/wishlist", wishlistRoutes);
+app.use("/api/checkout", checkoutRoutes);
+app.use("/api/payment", paymentRoutes);
 
 app.use(errorHandler);
 

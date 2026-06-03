@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { X, Upload, ImagePlus,  } from "lucide-react";
+import { X, Upload, ImagePlus } from "lucide-react";
 
 const INITIAL_FORM = {
   name: "",
@@ -85,10 +85,11 @@ function AddProduct({ onClose, onProductAdded }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
-
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-gray-100">
-          <h2 className="text-xl font-bold text-gray-800">Add New Product Details</h2>
+          <h2 className="text-xl font-bold text-gray-800">
+            Add New Product Details
+          </h2>
           <button
             onClick={onClose}
             className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
@@ -106,11 +107,33 @@ function AddProduct({ onClose, onProductAdded }) {
           )}
 
           {[
-            { label: "Product Name *", name: "name", placeholder: "Lehenga set" },
-            { label: "Description *", name: "description", placeholder: "Seema Gujral - Multi-Coloured Lehenga Set" },
-            { label: "Stock *", name: "stock", placeholder: "20", type: "number" },
-            { label: "Price *", name: "price", placeholder: "195000", type: "number" },
-            { label: "Collections", name: "collections", placeholder: "Mehtab Womenswear" },
+            {
+              label: "Product Name *",
+              name: "name",
+              placeholder: "Lehenga set",
+            },
+            {
+              label: "Description *",
+              name: "description",
+              placeholder: "Seema Gujral - Multi-Coloured Lehenga Set",
+            },
+            {
+              label: "Stock *",
+              name: "stock",
+              placeholder: "20",
+              type: "number",
+            },
+            {
+              label: "Price *",
+              name: "price",
+              placeholder: "195000",
+              type: "number",
+            },
+            {
+              label: "Collections",
+              name: "collections",
+              placeholder: "Mehtab Womenswear",
+            },
             { label: "Color", name: "color", placeholder: "Multi color" },
             { label: "Fabric", name: "fabric", placeholder: "Velvet" },
           ].map((field) => (
@@ -164,16 +187,18 @@ function AddProduct({ onClose, onProductAdded }) {
                 ))}
 
                 {/* Empty slots */}
-                {Array.from({ length: MAX_IMAGES - imageFiles.length }).map((_, i) => (
-                  <button
-                    key={`empty-${i}`}
-                    type="button"
-                    onClick={() => fileRef.current.click()}
-                    className="aspect-square border-2 border-dashed border-gray-200 rounded-lg flex items-center justify-center hover:border-orange-300 hover:bg-orange-50 transition-colors"
-                  >
-                    <ImagePlus size={16} className="text-gray-300" />
-                  </button>
-                ))}
+                {Array.from({ length: MAX_IMAGES - imageFiles.length }).map(
+                  (_, i) => (
+                    <button
+                      key={`empty-${i}`}
+                      type="button"
+                      onClick={() => fileRef.current.click()}
+                      className="aspect-square border-2 border-dashed border-gray-200 rounded-lg flex items-center justify-center hover:border-orange-300 hover:bg-orange-50 transition-colors"
+                    >
+                      <ImagePlus size={16} className="text-gray-300" />
+                    </button>
+                  ),
+                )}
               </div>
             )}
 
