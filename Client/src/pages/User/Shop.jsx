@@ -4,7 +4,7 @@ import Footer from "../../components/User/Footer";
 import FilterSidebar from "../../components/User/FilterSidebar";
 import SortDropdown from "../../components/User/SortDropdown";
 import ProductCard from "../../components/User/ProductCard";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import shop1 from "../../assets/shop1.png";
 
 const API = "http://localhost:5000";
@@ -35,11 +35,15 @@ function Shop() {
 
       if (search) params.append("search", search);
       if (sort) params.append("sort", sort);
-      if (filters.collections.length) params.append("collections", filters.collections.join(","));
-      if (filters.colors.length) params.append("colors", filters.colors.join(","));
-      if (filters.fabrics.length) params.append("fabrics", filters.fabrics.join(","));
+      if (filters.collections.length)
+        params.append("collections", filters.collections.join(","));
+      if (filters.colors.length)
+        params.append("colors", filters.colors.join(","));
+      if (filters.fabrics.length)
+        params.append("fabrics", filters.fabrics.join(","));
       if (filters.minPrice) params.append("minPrice", filters.minPrice);
-      if (filters.maxPrice !== null) params.append("maxPrice", filters.maxPrice);
+      if (filters.maxPrice !== null)
+        params.append("maxPrice", filters.maxPrice);
 
       const res = await fetch(`${API}/api/products?${params}`);
       const data = await res.json();
@@ -64,13 +68,22 @@ function Shop() {
     setPage(1);
   };
 
+  // Trigger search: commit searchInput → search state
   const handleSearch = () => {
-    setSearch(searchInput);
+    setSearch(searchInput.trim());
     setPage(1);
   };
 
+  // Search on Enter key
   const handleKeyDown = (e) => {
     if (e.key === "Enter") handleSearch();
+  };
+
+  // Clear search
+  const handleClear = () => {
+    setSearchInput("");
+    setSearch("");
+    setPage(1);
   };
 
   const handleSortChange = (val) => {
@@ -104,27 +117,47 @@ function Shop() {
 
               {/* TOP BAR */}
               <div className="flex flex-col lg:flex-row justify-between gap-5 mb-10">
-                <div className="flex items-center gap-3">
-                  <div className="relative w-full lg:w-[400px]">
-                    <Search
-                      size={20}
-                      className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500"
-                    />
+                <div className="flex items-center gap-3 flex-1">
+                  {/* Search input — wider, icon clickable, clear button */}
+                  <div className="relative w-full lg:max-w-[600px]">
+                    {/* Clickable search icon */}
+                    <button
+                      onClick={handleSearch}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-800 transition"
+                      aria-label="Search"
+                    >
+                      <Search size={20} />
+                    </button>
+
                     <input
                       type="text"
                       placeholder="Search Product"
                       value={searchInput}
                       onChange={(e) => setSearchInput(e.target.value)}
                       onKeyDown={handleKeyDown}
-                      className="w-full bg-white py-3 pl-12 pr-4 outline-none border"
+                      className="w-full bg-white py-3 pl-12 pr-10 outline-none border border-gray-300 focus:border-gray-500 transition"
                     />
+
+                    {/* Clear button — only shown when there's input */}
+                    {searchInput && (
+                      <button
+                        onClick={handleClear}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-700 transition"
+                        aria-label="Clear search"
+                      >
+                        <X size={16} />
+                      </button>
+                    )}
                   </div>
+
+                  {/* Result count */}
                   {!loading && (
                     <span className="text-xs text-gray-400 whitespace-nowrap">
                       {total} result{total !== 1 ? "s" : ""}
                     </span>
                   )}
                 </div>
+
                 <SortDropdown value={sort} onChange={handleSortChange} />
               </div>
 

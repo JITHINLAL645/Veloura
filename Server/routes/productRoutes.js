@@ -6,6 +6,7 @@ import {
   getProductById,
   getFilterOptions,
   createProduct,
+  updateProduct,   
   toggleListed,
   deleteProduct,
 } from "../controllers/productController.js";
@@ -19,6 +20,8 @@ router.get("/", getProducts);
 router.get("/:id", getProductById);
 
 router.post("/", upload.array("images", 5), createProduct);
+
+router.put("/:id", upload.array("images", 5), updateProduct);   
 
 router.patch("/:id/toggle", toggleListed);
 

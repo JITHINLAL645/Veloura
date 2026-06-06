@@ -16,60 +16,38 @@ const getProducts = async (req, res, next) => {
     const colors = req.query.colors || "";
     const fabrics = req.query.fabrics || "";
 
-    const minPrice = req.query.minPrice
-      ? Number(req.query.minPrice)
-      : null;
-
-    const maxPrice = req.query.maxPrice
-      ? Number(req.query.maxPrice)
-      : null;
+    const minPrice = req.query.minPrice ? Number(req.query.minPrice) : null;
+    const maxPrice = req.query.maxPrice ? Number(req.query.maxPrice) : null;
 
     const sort = req.query.sort || "";
 
     const query = { listed: true };
 
     if (search) {
-      query.name = {
-        $regex: search,
-        $options: "i",
-      };
+      query.name = { $regex: search, $options: "i" };
     }
 
     if (collections) {
-      query.collections = {
-        $in: collections.split(","),
-      };
+      query.collections = { $in: collections.split(",") };
     }
 
     if (colors) {
-      query.color = {
-        $in: colors.split(","),
-      };
+      query.color = { $in: colors.split(",") };
     }
 
     if (fabrics) {
-      query.fabric = {
-        $in: fabrics.split(","),
-      };
+      query.fabric = { $in: fabrics.split(",") };
     }
 
     if (minPrice !== null || maxPrice !== null) {
       query.price = {};
-
-      if (minPrice !== null)
-        query.price.$gte = minPrice;
-
-      if (maxPrice !== null)
-        query.price.$lte = maxPrice;
+      if (minPrice !== null) query.price.$gte = minPrice;
+      if (maxPrice !== null) query.price.$lte = maxPrice;
     }
 
     let sortOption = { createdAt: -1 };
-
-    if (sort === "price_asc")
-      sortOption = { price: 1 };
-
-    if (sort === "price_desc")
-      sortOption = { price: -1 };
+    if (sort === "price_asc") sortOption = { price: 1 };
+    if (sort === "price_desc") sortOption = { price: -1 };
 
     const total = await Product.countDocuments(query);
 
@@ -92,21 +70,13 @@ const getProducts = async (req, res, next) => {
 
 const getProductById = async (req, res, next) => {
   try {
-    const product = await Product.findById(
-      req.params.id
-    );
+    const product = await Product.findById(req.params.id);
 
     if (!product) {
-      return res.status(404).json({
-        success: false,
-        message: "Product not found",
-      });
+      return res.status(404).json({ success: false, message: "Product not found" });
     }
 
-    res.json({
-      success: true,
-      product,
-    });
+    res.json({ success: true, product });
   } catch (err) {
     next(err);
   }
@@ -114,34 +84,13 @@ const getProductById = async (req, res, next) => {
 
 const getFilterOptions = async (req, res, next) => {
   try {
-    const [
-      collections,
-      colors,
-      fabrics,
-      priceData,
-    ] = await Promise.all([
-      Product.distinct("collections", {
-        listed: true,
-      }),
-
-      Product.distinct("color", {
-        listed: true,
-      }),
-
-      Product.distinct("fabric", {
-        listed: true,
-      }),
-
+    const [collections, colors, fabrics, priceData] = await Promise.all([
+      Product.distinct("collections", { listed: true }),
+      Product.distinct("color", { listed: true }),
+      Product.distinct("fabric", { listed: true }),
       Product.aggregate([
         { $match: { listed: true } },
-
-        {
-          $group: {
-            _id: null,
-            min: { $min: "$price" },
-            max: { $max: "$price" },
-          },
-        },
+        { $group: { _id: null, min: { $min: "$price" }, max: { $max: "$price" } } },
       ]),
     ]);
 
@@ -150,11 +99,7 @@ const getFilterOptions = async (req, res, next) => {
       collections: collections.filter(Boolean),
       colors: colors.filter(Boolean),
       fabrics: fabrics.filter(Boolean),
-
-      priceRange: priceData[0] || {
-        min: 0,
-        max: 500000,
-      },
+      priceRange: priceData[0] || { min: 0, max: 500000 },
     });
   } catch (err) {
     next(err);
@@ -163,21 +108,9 @@ const getFilterOptions = async (req, res, next) => {
 
 const createProduct = async (req, res, next) => {
   try {
-    const {
-      name,
-      description,
-      stock,
-      price,
-      collections,
-      color,
-      fabric,
-    } = req.body;
+    const { name, description, stock, price, collections, color, fabric } = req.body;
 
-    const images = req.files
-      ? req.files.map(
-          (file) => `/uploads/${file.filename}`
-        )
-      : [];
+    const images = req.files ? req.files.map((file) => `/uploads/${file.filename}`) : [];
 
     const product = await Product.create({
       name,
@@ -190,10 +123,53 @@ const createProduct = async (req, res, next) => {
       images,
     });
 
-    res.status(201).json({
-      success: true,
-      product,
-    });
+    res.status(201).json({ success: true, product });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const updateProduct = async (req, res, next) => {
+  try {
+    const product = await Product.findById(req.params.id);
+
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
+
+    const { name, description, stock, price, collections, color, fabric, removedImages } = req.body;
+
+    // Delete physically removed images from disk
+    if (removedImages) {
+      const toRemove = Array.isArray(removedImages) ? removedImages : [removedImages];
+      toRemove.forEach((img) => {
+        const filePath = path.join(__dirname, "..", img);
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath);
+        }
+      });
+      // Remove from product's images array
+      product.images = product.images.filter((img) => !toRemove.includes(img));
+    }
+
+    // Append any newly uploaded images
+    if (req.files && req.files.length > 0) {
+      const newImages = req.files.map((file) => `/uploads/${file.filename}`);
+      product.images = [...product.images, ...newImages];
+    }
+
+    // Update text fields
+    if (name !== undefined) product.name = name;
+    if (description !== undefined) product.description = description;
+    if (stock !== undefined) product.stock = Number(stock);
+    if (price !== undefined) product.price = Number(price);
+    if (collections !== undefined) product.collections = collections;
+    if (color !== undefined) product.color = color;
+    if (fabric !== undefined) product.fabric = fabric;
+
+    await product.save();
+
+    res.json({ success: true, product });
   } catch (err) {
     next(err);
   }
@@ -201,25 +177,16 @@ const createProduct = async (req, res, next) => {
 
 const toggleListed = async (req, res, next) => {
   try {
-    const product = await Product.findById(
-      req.params.id
-    );
+    const product = await Product.findById(req.params.id);
 
     if (!product) {
-      return res.status(404).json({
-        success: false,
-        message: "Product not found",
-      });
+      return res.status(404).json({ success: false, message: "Product not found" });
     }
 
     product.listed = !product.listed;
-
     await product.save();
 
-    res.json({
-      success: true,
-      product,
-    });
+    res.json({ success: true, product });
   } catch (err) {
     next(err);
   }
@@ -227,36 +194,22 @@ const toggleListed = async (req, res, next) => {
 
 const deleteProduct = async (req, res, next) => {
   try {
-    const product =
-      await Product.findByIdAndDelete(
-        req.params.id
-      );
+    const product = await Product.findByIdAndDelete(req.params.id);
 
     if (!product) {
-      return res.status(404).json({
-        success: false,
-        message: "Product not found",
-      });
+      return res.status(404).json({ success: false, message: "Product not found" });
     }
 
     if (product.images?.length) {
       product.images.forEach((img) => {
-        const filePath = path.join(
-          __dirname,
-          "..",
-          img
-        );
-
+        const filePath = path.join(__dirname, "..", img);
         if (fs.existsSync(filePath)) {
           fs.unlinkSync(filePath);
         }
       });
     }
 
-    res.json({
-      success: true,
-      message: "Product deleted",
-    });
+    res.json({ success: true, message: "Product deleted" });
   } catch (err) {
     next(err);
   }
@@ -267,6 +220,7 @@ export {
   getProductById,
   getFilterOptions,
   createProduct,
+  updateProduct,
   toggleListed,
   deleteProduct,
 };

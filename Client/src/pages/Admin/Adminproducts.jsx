@@ -1,26 +1,30 @@
-import { useState, useEffect, useCallback } from "react";
-import { Search, Trash2, Plus, ChevronLeft, ChevronRight, Package } from "lucide-react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { Search, Trash2, Plus, ChevronLeft, ChevronRight, Package, Pencil, X } from "lucide-react";
 import AdminSidebar from "../../components/Admin/AdminSidebar";
 import AddProduct from "../../components/Admin/AddProduct";
+import EditProduct from "../../components/Admin/EditProduct";
 
 const API = "http://localhost:5000";
 
 function AdminProducts() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
   const [searchInput, setSearchInput] = useState("");
+  const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
   const [togglingId, setTogglingId] = useState(null);
 
-  const fetchProducts = useCallback(async () => {
+  const debounceRef = useRef(null);
+
+  const fetchProducts = useCallback(async (searchTerm, pageNum) => {
     setLoading(true);
     try {
-      const params = new URLSearchParams({ page, limit: 8 });
-      if (search) params.append("search", search);
+      const params = new URLSearchParams({ page: pageNum, limit: 5 });
+      if (searchTerm) params.append("search", searchTerm);
       const res = await fetch(`${API}/api/products?${params}`);
       const data = await res.json();
       setProducts(data.products || []);
@@ -30,19 +34,37 @@ function AdminProducts() {
     } finally {
       setLoading(false);
     }
-  }, [page, search]);
+  }, []);
 
   useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+    fetchProducts(search, page);
+  }, [search, page, fetchProducts]);
 
-  const handleSearch = () => {
+  const handleInputChange = (e) => {
+    const value = e.target.value;
+    setSearchInput(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setSearch(value);
+      setPage(1);
+    }, 500);
+  };
+
+  const triggerSearch = () => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
     setSearch(searchInput);
     setPage(1);
   };
 
   const handleKeyDown = (e) => {
-    if (e.key === "Enter") handleSearch();
+    if (e.key === "Enter") triggerSearch();
+  };
+
+  const handleClear = () => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    setSearchInput("");
+    setSearch("");
+    setPage(1);
   };
 
   const handleToggleListed = async (id) => {
@@ -77,6 +99,12 @@ function AdminProducts() {
     setProducts((prev) => [newProduct, ...prev]);
   };
 
+  const handleProductUpdated = (updatedProduct) => {
+    setProducts((prev) =>
+      prev.map((p) => (p._id === updatedProduct._id ? updatedProduct : p))
+    );
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       <AdminSidebar />
@@ -102,19 +130,44 @@ function AdminProducts() {
               type="text"
               placeholder="Search products"
               value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
+              onChange={handleInputChange}
               onKeyDown={handleKeyDown}
               className="w-full border border-gray-200 rounded-xl pl-4 pr-10 py-2.5 text-sm text-gray-600 bg-white focus:outline-none focus:ring-2 focus:ring-orange-300 transition"
             />
-            <Search size={16} className="absolute right-3 top-3 text-gray-400" />
+            {searchInput ? (
+              <button
+                onClick={handleClear}
+                className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X size={16} />
+              </button>
+            ) : (
+              <Search size={16} className="absolute right-3 top-3 text-gray-400 pointer-events-none" />
+            )}
           </div>
           <button
-            onClick={handleSearch}
+            onClick={triggerSearch}
             className="bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-colors"
           >
             Search
           </button>
         </div>
+
+        {/* Active search indicator */}
+        {search && (
+          <div className="flex items-center gap-2 mb-4 text-sm text-gray-500">
+            <span>
+              Showing results for{" "}
+              <span className="font-semibold text-gray-700">"{search}"</span>
+            </span>
+            <button
+              onClick={handleClear}
+              className="text-orange-500 hover:text-orange-600 font-medium transition-colors"
+            >
+              Clear
+            </button>
+          </div>
+        )}
 
         {/* Table */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -135,7 +188,17 @@ function AdminProducts() {
           ) : products.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-gray-400">
               <Package size={40} className="mb-3 opacity-40" />
-              <p className="text-sm">No products found</p>
+              <p className="text-sm">
+                {search ? `No products found for "${search}"` : "No products found"}
+              </p>
+              {search && (
+                <button
+                  onClick={handleClear}
+                  className="mt-3 text-orange-500 hover:text-orange-600 text-sm font-medium"
+                >
+                  Clear search
+                </button>
+              )}
             </div>
           ) : (
             products.map((product) => (
@@ -155,7 +218,6 @@ function AdminProducts() {
                   ₹{Number(product.price).toLocaleString("en-IN")}
                 </span>
 
-                {/* Show first image as thumbnail + count badge */}
                 <div className="relative w-fit">
                   {product.images && product.images.length > 0 ? (
                     <>
@@ -189,10 +251,20 @@ function AdminProducts() {
                   >
                     {product.listed ? "Unlist" : "List"}
                   </button>
+
+                  <button
+                    onClick={() => setEditingProduct(product)}
+                    className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-lg transition-colors"
+                    title="Edit product"
+                  >
+                    <Pencil size={15} />
+                  </button>
+
                   <button
                     onClick={() => handleDelete(product._id)}
                     disabled={deletingId === product._id}
                     className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-40"
+                    title="Delete product"
                   >
                     <Trash2 size={15} />
                   </button>
@@ -202,8 +274,10 @@ function AdminProducts() {
           )}
         </div>
 
-        {/* Add Product Button */}
-        <div className="flex justify-end mt-5">
+        {/* Bottom Row: Add Product + Pagination */}
+        <div className="flex items-center justify-between mt-6">
+
+          {/* Add Product Button */}
           <button
             onClick={() => setShowAddModal(true)}
             className="flex items-center gap-2 bg-gray-900 hover:bg-black text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors shadow-md"
@@ -211,47 +285,49 @@ function AdminProducts() {
             <Plus size={16} />
             Add Product
           </button>
-        </div>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-end gap-2 mt-6">
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-100 disabled:opacity-40 transition-colors"
-            >
-              <ChevronLeft size={16} />
-            </button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+          {/* Pagination — Prev / 1 / 2 / Next */}
+          {totalPages > 1 && (
+            <div className="flex items-center gap-3">
+              {/* Prev */}
               <button
-                key={p}
-                onClick={() => setPage(p)}
-                className={`w-8 h-8 text-sm rounded-lg font-medium transition-colors ${
-                  p === page
-                    ? "bg-gray-900 text-white"
-                    : "bg-white border border-gray-200 text-gray-600 hover:bg-orange-50"
-                }`}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="px-5 py-2 text-sm font-medium rounded-xl border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
-                {p}
+                Prev
               </button>
-            ))}
-            <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-              className="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-100 disabled:opacity-40 transition-colors"
-            >
-              <ChevronRight size={16} />
-            </button>
-          </div>
-        )}
+
+              {/* Page indicator */}
+              <span className="text-sm font-semibold text-gray-700 min-w-[40px] text-center">
+                {page} / {totalPages}
+              </span>
+
+              {/* Next */}
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="px-5 py-2 text-sm font-medium rounded-xl border border-gray-200 bg-white hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </div>
       </main>
 
-      {/* Add Product Modal */}
       {showAddModal && (
         <AddProduct
           onClose={() => setShowAddModal(false)}
           onProductAdded={handleProductAdded}
+        />
+      )}
+
+      {editingProduct && (
+        <EditProduct
+          product={editingProduct}
+          onClose={() => setEditingProduct(null)}
+          onProductUpdated={handleProductUpdated}
         />
       )}
     </div>

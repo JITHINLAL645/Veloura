@@ -1,24 +1,36 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { X, Upload, ImagePlus } from "lucide-react";
 
-const INITIAL_FORM = {
-  name: "",
-  description: "",
-  stock: "",
-  price: "",
-  collections: "",
-  color: "",
-  fabric: "",
-};
-
+const API = "http://localhost:5000";
 const MAX_IMAGES = 5;
 
-function AddProduct({ onClose, onProductAdded }) {
-  const [form, setForm] = useState(INITIAL_FORM);
-  const [imageFiles, setImageFiles] = useState([]); // array of { file, preview }
+function EditProduct({ product, onClose, onProductUpdated }) {
+  const [form, setForm] = useState({
+    name: product.name || "",
+    description: product.description || "",
+    stock: product.stock ?? "",
+    price: product.price ?? "",
+    collections: product.collections || "",
+    color: product.color || "",
+    fabric: product.fabric || "",
+  });
+
+  const [existingImages, setExistingImages] = useState(product.images || []);
+  const [removedImages, setRemovedImages] = useState([]);
+  const [newImageFiles, setNewImageFiles] = useState([]);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const fileRef = useRef();
+
+  useEffect(() => {
+    return () => {
+      newImageFiles.forEach(({ preview }) => URL.revokeObjectURL(preview));
+    };
+  }, [newImageFiles]);
+
+  const totalImages = existingImages.length + newImageFiles.length;
+  const slotsLeft = MAX_IMAGES - totalImages;
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -26,21 +38,24 @@ function AddProduct({ onClose, onProductAdded }) {
 
   const handleImageChange = (e) => {
     const selected = Array.from(e.target.files);
-    const remaining = MAX_IMAGES - imageFiles.length;
+    if (slotsLeft <= 0) return;
 
-    if (remaining <= 0) return;
-
-    const toAdd = selected.slice(0, remaining).map((file) => ({
+    const toAdd = selected.slice(0, slotsLeft).map((file) => ({
       file,
       preview: URL.createObjectURL(file),
     }));
 
-    setImageFiles((prev) => [...prev, ...toAdd]);
+    setNewImageFiles((prev) => [...prev, ...toAdd]);
     e.target.value = "";
   };
 
-  const handleRemoveImage = (index) => {
-    setImageFiles((prev) => {
+  const handleRemoveExisting = (imgPath) => {
+    setExistingImages((prev) => prev.filter((p) => p !== imgPath));
+    setRemovedImages((prev) => [...prev, imgPath]);
+  };
+
+  const handleRemoveNew = (index) => {
+    setNewImageFiles((prev) => {
       URL.revokeObjectURL(prev[index].preview);
       return prev.filter((_, i) => i !== index);
     });
@@ -58,21 +73,25 @@ function AddProduct({ onClose, onProductAdded }) {
     setLoading(true);
     try {
       const data = new FormData();
-      Object.entries(form).forEach(([k, v]) => data.append(k, v));
-      imageFiles.forEach(({ file }) => data.append("images", file));
 
-      const res = await fetch("http://localhost:5000/api/products", {
-        method: "POST",
+      Object.entries(form).forEach(([k, v]) => data.append(k, v));
+
+      removedImages.forEach((img) => data.append("removedImages", img));
+
+      newImageFiles.forEach(({ file }) => data.append("images", file));
+
+      const res = await fetch(`${API}/api/products/${product._id}`, {
+        method: "PUT",
         body: data,
       });
 
       if (!res.ok) {
         const err = await res.json();
-        throw new Error(err.message || "Failed to add product");
+        throw new Error(err.message || "Failed to update product");
       }
 
       const json = await res.json();
-      onProductAdded(json.product);
+      onProductUpdated(json.product);
       onClose();
     } catch (err) {
       setError(err.message);
@@ -81,14 +100,17 @@ function AddProduct({ onClose, onProductAdded }) {
     }
   };
 
+  const allImageSlots = [
+    ...existingImages.map((path) => ({ type: "existing", path })),
+    ...newImageFiles.map((f, i) => ({ type: "new", preview: f.preview, index: i })),
+  ];
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-gray-100">
-          <h2 className="text-xl font-bold text-gray-800">
-            Add New Product Details
-          </h2>
+          <h2 className="text-xl font-bold text-gray-800">Edit Product</h2>
           <button
             onClick={onClose}
             className="p-1.5 rounded-full hover:bg-gray-100 transition-colors"
@@ -106,33 +128,11 @@ function AddProduct({ onClose, onProductAdded }) {
           )}
 
           {[
-            {
-              label: "Product Name *",
-              name: "name",
-              placeholder: "Lehenga set",
-            },
-            {
-              label: "Description *",
-              name: "description",
-              placeholder: "Seema Gujral - Multi-Coloured Lehenga Set",
-            },
-            {
-              label: "Stock *",
-              name: "stock",
-              placeholder: "20",
-              type: "number",
-            },
-            {
-              label: "Price *",
-              name: "price",
-              placeholder: "195000",
-              type: "number",
-            },
-            {
-              label: "Collections",
-              name: "collections",
-              placeholder: "Mehtab Womenswear",
-            },
+            { label: "Product Name *", name: "name", placeholder: "Lehenga set" },
+            { label: "Description *", name: "description", placeholder: "Seema Gujral - Multi-Coloured Lehenga Set" },
+            { label: "Stock *", name: "stock", placeholder: "20", type: "number" },
+            { label: "Price *", name: "price", placeholder: "195000", type: "number" },
+            { label: "Collections", name: "collections", placeholder: "Mehtab Womenswear" },
             { label: "Color", name: "color", placeholder: "Multi color" },
             { label: "Fabric", name: "fabric", placeholder: "Velvet" },
           ].map((field) => (
@@ -151,53 +151,59 @@ function AddProduct({ onClose, onProductAdded }) {
             </div>
           ))}
 
-          {/* Image Upload */}
+          {/* Image Management */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Product Images
               <span className="ml-2 text-xs text-gray-400 font-normal">
-                ({imageFiles.length}/{MAX_IMAGES} added)
+                ({totalImages}/{MAX_IMAGES})
               </span>
             </label>
 
-            {/* Image Preview Grid */}
-            {imageFiles.length > 0 && (
+            {allImageSlots.length > 0 && (
               <div className="grid grid-cols-5 gap-2 mb-3">
-                {imageFiles.map((img, index) => (
-                  <div key={index} className="relative group aspect-square">
+                {allImageSlots.map((slot, i) => (
+                  <div key={i} className="relative group aspect-square">
                     <img
-                      src={img.preview}
-                      alt={`Product ${index + 1}`}
+                      src={slot.type === "existing" ? `${API}${slot.path}` : slot.preview}
+                      alt={`Product ${i + 1}`}
                       className="w-full h-full object-cover rounded-lg border border-gray-200"
                     />
                     <button
                       type="button"
-                      onClick={() => handleRemoveImage(index)}
+                      onClick={() =>
+                        slot.type === "existing"
+                          ? handleRemoveExisting(slot.path)
+                          : handleRemoveNew(slot.index)
+                      }
                       className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow"
                     >
                       <X size={10} />
                     </button>
-                    {index === 0 && (
+                    {i === 0 && (
                       <span className="absolute bottom-0 left-0 right-0 text-center text-[9px] bg-orange-500 text-white rounded-b-lg py-0.5 font-medium">
                         Main
+                      </span>
+                    )}
+                    {slot.type === "new" && (
+                      <span className="absolute top-0 left-0 right-0 text-center text-[9px] bg-blue-500 text-white rounded-t-lg py-0.5 font-medium">
+                        New
                       </span>
                     )}
                   </div>
                 ))}
 
                 {/* Empty slots */}
-                {Array.from({ length: MAX_IMAGES - imageFiles.length }).map(
-                  (_, i) => (
-                    <button
-                      key={`empty-${i}`}
-                      type="button"
-                      onClick={() => fileRef.current.click()}
-                      className="aspect-square border-2 border-dashed border-gray-200 rounded-lg flex items-center justify-center hover:border-orange-300 hover:bg-orange-50 transition-colors"
-                    >
-                      <ImagePlus size={16} className="text-gray-300" />
-                    </button>
-                  ),
-                )}
+                {Array.from({ length: slotsLeft }).map((_, i) => (
+                  <button
+                    key={`empty-${i}`}
+                    type="button"
+                    onClick={() => fileRef.current.click()}
+                    className="aspect-square border-2 border-dashed border-gray-200 rounded-lg flex items-center justify-center hover:border-orange-300 hover:bg-orange-50 transition-colors"
+                  >
+                    <ImagePlus size={16} className="text-gray-300" />
+                  </button>
+                ))}
               </div>
             )}
 
@@ -210,7 +216,7 @@ function AddProduct({ onClose, onProductAdded }) {
               className="hidden"
             />
 
-            {imageFiles.length === 0 && (
+            {allImageSlots.length === 0 && (
               <button
                 type="button"
                 onClick={() => fileRef.current.click()}
@@ -221,14 +227,14 @@ function AddProduct({ onClose, onProductAdded }) {
               </button>
             )}
 
-            {imageFiles.length > 0 && imageFiles.length < MAX_IMAGES && (
+            {allImageSlots.length > 0 && slotsLeft > 0 && (
               <button
                 type="button"
                 onClick={() => fileRef.current.click()}
                 className="flex items-center gap-2 bg-gray-800 hover:bg-gray-900 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
               >
                 <Upload size={14} />
-                Add More ({MAX_IMAGES - imageFiles.length} left)
+                Add More ({slotsLeft} left)
               </button>
             )}
           </div>
@@ -247,7 +253,7 @@ function AddProduct({ onClose, onProductAdded }) {
               disabled={loading}
               className="flex-1 bg-gray-900 hover:bg-black text-white text-sm font-medium py-2.5 rounded-lg transition-colors disabled:opacity-60"
             >
-              {loading ? "Saving..." : "Submit"}
+              {loading ? "Saving..." : "Save Changes"}
             </button>
           </div>
         </form>
@@ -256,4 +262,4 @@ function AddProduct({ onClose, onProductAdded }) {
   );
 }
 
-export default AddProduct;
+export default EditProduct;
